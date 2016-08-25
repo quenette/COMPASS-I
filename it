@@ -1,0 +1,29 @@
+c-ArrayDecl.scm:;                (e-decln (ad->sym ad) (td->sz (ad->td ad)) c (ad->td ad))    ... originally put type info as base type
+c-ArrayDecl.scm:                (e-decln (ad->sym ad) (td->sz (ad->td ad)) c ad) 
+c-ArrayDecl.scm:      (td->sym (ad->td ad))
+c-ArrayDecl.scm:      (* (ad->c ad) (td->sz (ad->td ad)))
+c-ObjDecl.scm:; make-td-od : TypeDecl -> Qual -> ObjDecl
+c-ObjDecl.scm:(define make-td-od
+c-ObjDecl.scm:         ((td? od) (td->id od))
+c-ObjDecl.scm:         ((ad? od) (td->id (ad->td od)))
+c-ObjDecl.scm:         ((td? od) (td->it od))
+c-ObjDecl.scm:         ((ad? od) (td->it (ad->td od)))
+c-ObjDecl.scm:         ((td? od) (td->sym od))
+c-ObjDecl.scm:         ((td? od) (td->sz od))
+c-ObjDecl.scm:                 (make-td-od (ast->td py_ast_var) (display ""))   ;TODO: impl qu
+c-TypeDecl.scm:            (e-decl (id->sym (td->id td)) (td->sz td) td) 
+c-TypeDecl.scm:                     (lambda (v) (e-setref (id->sym (td->id td)) v))
+c-TypeDecl.scm:                  (e-setref (id->sym (td->id td)) '())
+c-TypeDecl.scm:         ((and (has-kind? td) (eqv? (td->kind td) 'type-decl))
+c-TypeDecl.scm:               ((and (id? (td->id td)) (it? (td->it td))) #t)
+c-TypeDecl.scm:; td->kind : TypeDecl -> Kind
+c-TypeDecl.scm:(define td->kind
+c-TypeDecl.scm:; td->id : TypeDecl -> Id_b    ;note: can't remember why _b
+c-TypeDecl.scm:(define td->id
+c-TypeDecl.scm:; td->sym : TypeDecl -> Sym
+c-TypeDecl.scm:(define td->sym
+c-TypeDecl.scm:      (id->sym (td->id td))
+c-TypeDecl.scm:; td->it : TypeDecl -> IT
+c-TypeDecl.scm:(define td->it
+c-TypeDecl.scm:; td->sz : TypeDecl -> Size
+c-TypeDecl.scm:(define td->sz

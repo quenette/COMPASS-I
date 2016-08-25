@@ -1,0 +1,238 @@
+#!/usr/bin/guile -s
+!#
+
+(use-modules (guiletap))
+(load "../c-Declaration.scm")
+(load "../c-DenDecl.scm")
+(load "../c-all-expressions.scm")
+
+; tests ...
+(plan 101)
+
+(define td (make-it-td (make-id "test") (make-single-it 'int)))
+(define co (make-co (make-single-it 'int) 1))
+(define jp1 '())
+(define zeta1 '())
+
+(is-ok  1 "(D? (make-od-Eel-D td co))"              #t        (D? (make-od-Eel-D td co)))
+(is-ok  2 "(D->kind (make-od-Eel-D td co))"         'decl     (D->kind (make-od-Eel-D td co)))
+(is-ok  3 "(td? (D->dd (make-od-Eel-D td co)))"     #t        (td? (D->dd (make-od-Eel-D td co)))) 
+(is-ok  4 "(E? (D->Eel (make-od-Eel-D td E)))"      #t        (E? (D->Eel (make-od-Eel-D td co)))) 
+
+(is-ok  5 "(D? (make-od-D td))"                      #t        (D? (make-od-D td)))
+(is-ok  6 "(D->kind (make-od-D td))"                 'decl     (D->kind (make-od-D td)))
+(is-ok  7 "(td? (D->dd (make-od-D td)))"             #t        (td? (D->dd (make-od-D td))))
+(is-ok  8 "(D-init? (make-od-D td))"                 #f        (D-init? (make-od-D td)))
+(is-ok  9 "(unspecified? (D->Eel (make-od-D td)))"   #t        (unspecified? (D->Eel (make-od-D td)))) 
+
+(define ad1 (make-ad-c td 2))
+(define  co2 (make-co (make-single-it 'signed) 1))
+(define  co3 (make-co (make-single-it 'long) 2))
+(define  el1 (make-el (list co2 co3)))
+(define D3 (make-od-Eel-D ad1 el1))
+(is-ok 10 "(D? D3)"                      #t        (D? D3))
+(is-ok 11 "(D->kind D3)"                 'decl     (D->kind D3))
+(is-ok 12 "(ad? (D->dd D3))"             #t        (ad? (D->dd D3)))
+(is-ok 13 "(D-init? D3)"                 #t        (D-init? D3))
+(is-ok 14 "(el? (D->Eel D3))"            #t        (el? (D->Eel D3)))
+
+(define td2 (make-it-td (make-id "argc") (make-single-it 'int)))
+(define od1 (make-td-od td2 (display "")))
+(define dd1a (make-od-dd od1))
+(define  D4 (make-od-D dd1a))
+(define pl1 (make-pl (list D4)))
+(define td3 (make-it-td (make-id "main") (make-single-it 'int)))
+(define od4 (make-td-od td3 (display "")))
+(define fd1 (make-fd pl1 od4))
+(define  D4 (make-fd-D fd1))
+
+(is-ok 15 "(D? (make-fd-D fd1))"                     #t        (D? D4))
+(is-ok 16 "(D->kind (make-fd-D fd1))"                'decl     (D->kind D4))
+(is-ok 17 "(fd? (D->dd (make-fd-D fd1)))"            #t        (fd? (D->dd D4)))
+(is-ok 18 "(D-init? (make-fd-D fd1))"                #f        (D-init? D4))
+(is-ok 19 "(unspecified? (D->Eel (make-fd-D fd1)))"  #t        (unspecified? (D->Eel (make-fd-D fd1)))) 
+
+
+(python-eval "import imp")
+(python-eval "pyc = imp.load_source( 'test_c_type_specifier', 't/scripts/test-c-type-specifier.py' )")
+(python-eval "pyc2 = imp.load_source( 'test_c_pointer', 't/scripts/test-c-pointer.py' )")
+(python-eval "pyc3 = imp.load_source( 'test_ad', 't/scripts/test-c-array.py' )")
+(python-eval "pyc4 = imp.load_source( 'test_c_func', 't/scripts/test-c-func.py' )")
+(python-eval "t = pyc.main_eg()")
+(python-eval "t2 = pyc2.main_eg()")
+(python-eval "t3 = pyc3.main_eg()")
+(python-eval "t4 = pyc4.main_eg()")
+
+(define rho  (make-env 0 100000))
+(define s  (empty-s))
+(define rho,s (list rho s))
+
+;  With initailiser...
+(define tval00 ((ast->e-od-Eel-D "t.ext[00]") jp1 zeta1 (car rho,s)        (cadr rho,s)))
+(define tval01 ((ast->e-od-Eel-D "t.ext[01]") jp1 zeta1 (tval->rho tval00) (tval->s tval00)))
+(define tval02 ((ast->e-od-Eel-D "t.ext[02]") jp1 zeta1 (tval->rho tval01) (tval->s tval01)))
+(define tval03 ((ast->e-od-Eel-D "t.ext[03]") jp1 zeta1 (tval->rho tval02) (tval->s tval02)))
+(define tval04 ((ast->e-od-Eel-D "t.ext[04]") jp1 zeta1 (tval->rho tval03) (tval->s tval03)))
+(define tval05 ((ast->e-od-Eel-D "t.ext[05]") jp1 zeta1 (tval->rho tval04) (tval->s tval04)))
+(define tval06 ((ast->e-od-Eel-D "t.ext[06]") jp1 zeta1 (tval->rho tval05) (tval->s tval05)))
+(define tval07 ((ast->e-od-Eel-D "t.ext[07]") jp1 zeta1 (tval->rho tval06) (tval->s tval06)))
+;(define tval08 ((ast->e-od-Eel-D "t.ext[08]") jp1 zeta1 (tval->rho tval07) (tval->s tval07))) ; signed-/unsigned- char not supported by pycparser
+;(define tval09 ((ast->e-od-Eel-D "t.ext[09]") jp1 zeta1 (tval->rho tval08) (tval->s tval08))) ; signed-/unsigned- char not supported by pycparser
+(define tval09 tval07)
+(define tval10 ((ast->e-od-Eel-D "t.ext[10]") jp1 zeta1 (tval->rho tval09) (tval->s tval09)))
+(define tval11 ((ast->e-od-Eel-D "t.ext[11]") jp1 zeta1 (tval->rho tval10) (tval->s tval10)))
+(define tval12 ((ast->e-od-Eel-D "t.ext[12]") jp1 zeta1 (tval->rho tval11) (tval->s tval11)))
+(define tval13 ((ast->e-od-Eel-D "t.ext[13]") jp1 zeta1 (tval->rho tval12) (tval->s tval12)))
+
+(is-ok 20 "t.ext[00]"   #\a  (deref "a" (tval->rho tval00) (tval->s tval00)))
+(is-ok 21 "t.ext[01]"   2    (deref "b" (tval->rho tval01) (tval->s tval01)))
+(is-ok 22 "t.ext[02]"   3    (deref "c" (tval->rho tval02) (tval->s tval02)))
+(is-ok 23 "t.ext[03]"   4    (deref "d" (tval->rho tval03) (tval->s tval03)))
+(is-ok 24 "t.ext[04]"   5.0  (deref "e" (tval->rho tval04) (tval->s tval04)))
+(is-ok 25 "t.ext[05]"   6.0  (deref "f" (tval->rho tval05) (tval->s tval05)))
+(is-ok 26 "t.ext[06]"   7    (deref "g" (tval->rho tval06) (tval->s tval06)))
+(is-ok 27 "t.ext[07]"   8    (deref "h" (tval->rho tval07) (tval->s tval07)))
+
+(is-ok 28 "t.ext[10]"   13   (deref "m" (tval->rho tval10) (tval->s tval10)))
+(is-ok 29 "t.ext[11]"   14   (deref "n" (tval->rho tval11) (tval->s tval11)))
+(is-ok 30 "t.ext[12]"   15   (deref "o" (tval->rho tval12) (tval->s tval12)))
+(is-ok 31 "t.ext[13]"   16.0 (deref "p" (tval->rho tval13) (tval->s tval13)))
+
+;  No initiatliser...
+(define tval14 ((ast->e-od-D "t.ext[14]") jp1 zeta1 (car rho,s)         (cadr rho,s)))
+(define tval15 ((ast->e-od-D "t.ext[15]") jp1 zeta1 (tval->rho tval14) (tval->s tval14)))
+(define tval16 ((ast->e-od-D "t.ext[16]") jp1 zeta1 (tval->rho tval15) (tval->s tval15)))
+(define tval17 ((ast->e-od-D "t.ext[17]") jp1 zeta1 (tval->rho tval16) (tval->s tval16)))
+(define tval18 ((ast->e-od-D "t.ext[18]") jp1 zeta1 (tval->rho tval17) (tval->s tval17)))
+(define tval19 ((ast->e-od-D "t.ext[19]") jp1 zeta1 (tval->rho tval18) (tval->s tval18)))
+(define tval20 ((ast->e-od-D "t.ext[20]") jp1 zeta1 (tval->rho tval19) (tval->s tval19)))
+(define tval21 ((ast->e-od-D "t.ext[21]") jp1 zeta1 (tval->rho tval20) (tval->s tval20)))
+;(define tval22 ((ast->e-od-D "t.ext[22]") jp1 zeta1 (tval->rho tval21) (tval->s tval21))) ; signed-/unsigned- char not supported by pycparser
+;(define tval23 ((ast->e-od-D "t.ext[23]") jp1 zeta1 (tval->rho tval22) (tval->s tval22))) ; signed-/unsigned- char not supported by pycparser
+(define tval23 tval21)
+(define tval24 ((ast->e-od-D "t.ext[24]") jp1 zeta1 (tval->rho tval23) (tval->s tval23)))
+(define tval25 ((ast->e-od-D "t.ext[25]") jp1 zeta1 (tval->rho tval24) (tval->s tval24)))
+(define tval26 ((ast->e-od-D "t.ext[26]") jp1 zeta1 (tval->rho tval25) (tval->s tval25)))
+(define tval27 ((ast->e-od-D "t.ext[27]") jp1 zeta1 (tval->rho tval26) (tval->s tval26)))
+
+(is-ok 32 "t.ext[14]"   '()  (deref "aa" (tval->rho tval14) (tval->s tval14)))
+(is-ok 33 "t.ext[15]"   '()  (deref "bb" (tval->rho tval15) (tval->s tval15)))
+(is-ok 34 "t.ext[16]"   '()  (deref "cc" (tval->rho tval16) (tval->s tval16)))
+(is-ok 35 "t.ext[17]"   '()  (deref "dd" (tval->rho tval17) (tval->s tval17)))
+(is-ok 36 "t.ext[18]"   '()  (deref "ee" (tval->rho tval18) (tval->s tval18)))
+(is-ok 37 "t.ext[19]"   '()  (deref "ff" (tval->rho tval19) (tval->s tval19)))
+(is-ok 38 "t.ext[20]"   '()  (deref "gg" (tval->rho tval20) (tval->s tval20)))
+(is-ok 39 "t.ext[21]"   '()  (deref "hh" (tval->rho tval21) (tval->s tval21)))
+
+(is-ok 40 "t.ext[24]"   '()  (deref "mm" (tval->rho tval24) (tval->s tval24)))
+(is-ok 41 "t.ext[25]"   '()  (deref "nn" (tval->rho tval25) (tval->s tval25)))
+(is-ok 42 "t.ext[26]"   '()  (deref "oo" (tval->rho tval26) (tval->s tval26)))
+(is-ok 43 "t.ext[27]"   '()  (deref "pp" (tval->rho tval27) (tval->s tval27)))
+
+; Pointers...
+(define tval2_0 ((ast->e-D "t2.ext[0]") jp1 zeta1 (car rho,s) (cadr rho,s)))
+(define tval2_2 ((ast->e-od-D "t2.ext[2]") jp1 zeta1 (tval->rho tval2_0) (tval->s tval2_0)))
+(define tval2_1 ((ast->e-od-Eel-D "t2.ext[1]") jp1 zeta1 (tval->rho tval2_2) (tval->s tval2_2)))
+
+(is-ok 44 "t2.ext[02]"   '()  (deref "c" (tval->rho tval2_2) (tval->s tval2_2)))
+(is-ok 45 "t2.ext[01]"   100000    (deref "b" (tval->rho tval2_1) (tval->s tval2_1)))
+
+
+; Arrays...
+
+(define D5 (ast->D "t3.ext[0]"))
+(is-ok 46 "(D? D5)"                      #t        (D? D5))
+(is-ok 47 "(D->kind D5)"                 'decl     (D->kind D5))
+(is-ok 48 "(ad? (D->dd D5))"             #t        (ad? (D->dd D5)))
+(is-ok 49 "(D-init? D5)"                 #f        (D-init? D5))
+(define tval5 ((e-D D5 #f) jp1 zeta1 rho s))
+(is-ok 50 "apply-env a"         100000 (apply-env "a" (tval->rho   tval5)))
+(is-ok 51 "apply-env 'next-l"   100005 (apply-env 'next-l (tval->rho tval5)))
+(is-ok 52 "apply-s a[0]"        '()    (apply-s 100000 (tval->s   tval5)))
+(is-ok 53 "apply-s a[0]"        '()    (apply-s 100001 (tval->s   tval5)))
+(is-ok 54 "apply-s a[0]"        '()    (apply-s 100002 (tval->s   tval5)))
+(is-ok 55 "apply-s a[0]"        '()    (apply-s 100003 (tval->s   tval5)))
+(is-ok 56 "apply-s a[0]"        '()    (apply-s 100004 (tval->s   tval5)))
+
+(define D6 (ast->D "t3.ext[1]"))
+(is-ok 57 "(D? D6)"                      #t        (D? D6))
+(is-ok 58 "(D->kind D6)"                 'decl     (D->kind D6))
+(is-ok 59 "(ad? (D->dd D6))"             #t        (ad? (D->dd D6)))
+(is-ok 60 "(D-init? D6)"                 #t        (D-init? D6))
+(is-ok 61 "(el? (D->Eel D6))"            #t        (el? (D->Eel D6)))
+(define tval6 ((e-D D6 #f) jp1 zeta1 rho s))
+(is-ok 62 "apply-env b"         100000 (apply-env "b" (tval->rho   tval6)))
+(is-ok 63 "apply-env 'next-l"   100002 (apply-env 'next-l (tval->rho tval6)))
+(is-ok 64 "apply-s b[0]"        1      (apply-s 100000 (tval->s   tval6)))
+(is-ok 65 "apply-s b[0]"        2      (apply-s 100001 (tval->s   tval6)))
+
+(define D7 (ast->D "t3.ext[2]"))
+(is-ok 66 "(D? D7)"                      #t        (D? D7))
+(is-ok 67 "(D->kind D7)"                 'decl     (D->kind D7))
+(is-ok 68 "(ad? (D->dd D7))"             #t        (ad? (D->dd D7)))
+(is-ok 69 "(D-init? D7)"                 #t        (D-init? D7))
+(is-ok 70 "(el? (D->Eel D7))"            #t        (el? (D->Eel D7)))   ; must be el: AST node is a co... mapping has to occur!
+(define tval7 ((e-D D7 #f) jp1 zeta1 rho s))
+(is-ok 71 "apply-env b"         100000   (apply-env "c" (tval->rho tval7)))
+(is-ok 72 "apply-env 'next-l"   100007   (apply-env 'next-l (tval->rho tval7)))
+(is-ok 73 "apply-s c[0]"        #\a      (apply-s 100000 (tval->s tval7)))
+(is-ok 74 "apply-s c[1]"        #\b      (apply-s 100001 (tval->s tval7)))
+(is-ok 75 "apply-s c[2]"        #\c      (apply-s 100002 (tval->s tval7)))
+(is-ok 76 "apply-s c[3]"        #\d      (apply-s 100003 (tval->s tval7)))
+(is-ok 77 "apply-s c[4]"        #\e      (apply-s 100004 (tval->s tval7)))
+(is-ok 78 "apply-s c[5]"        #\f      (apply-s 100005 (tval->s tval7)))
+(is-ok 79 "apply-s c[6]"        (integer->char 0)        (apply-s 100006 (tval->s tval7)))
+
+
+; Functions...
+(define  td2 (make-it-td (make-id "argc") (make-single-it 'int)))
+(define  D2 (make-od-D td2))
+(define  pl2 (make-pl (list D2)))
+(define  td3 (make-it-td (make-id "main") (make-single-it 'int)))
+(define  fd2 (make-fd pl2 td3))
+(is-ok 80 "(D? (make-fd-D fd2))"             #t        (D? (make-fd-D fd2)))
+(is-ok 81 "(fd? (D->dd (make-fd-D fd2)))"    #t        (fd? (D->dd (make-fd-D fd2))))
+
+(define D8 (ast->D "t4.ext[1].children()[0][1]"))
+(define fd3 (D->dd D8))
+(is-ok 82 "D? 3"                 #t         (D? D8))
+(is-ok 83 "fd? 3"                #t         (fd? fd3))
+(is-ok 84 "length 3"             2          (length (pl->D* (fd->pl fd3))))
+(is-ok 85 "i? 3"                 "i"        (id->sym (td->id (D->dd (car (pl->D* (fd->pl fd3)))))))
+(is-ok 86 "j? 3"                 "j"        (id->sym (pd->id (D->dd (cadr (pl->D* (fd->pl fd3)))))))
+(is-ok 87 "b? 3"                 "b"        (id->sym (pd->id (fd->od fd3))))
+
+(define tval8_0 ((ast->e-D "t4.ext[1].children()[0][1]") jp1 zeta1 (car rho,s) (cadr rho,s)))
+(is-ok 88 "tval8_0? 1"           1         (apply-env 'fnext-l (tval->rho tval8_0)))
+
+; Sequence of D...
+(define D00 (ast->od-Eel-D "t.ext[00]"))
+(define D01 (ast->od-Eel-D "t.ext[01]"))
+(define D02 (ast->od-Eel-D "t.ext[02]"))
+(define D03 (ast->od-Eel-D "t.ext[03]"))
+(define D04 (ast->od-Eel-D "t.ext[04]"))
+(define D05 (ast->od-Eel-D "t.ext[05]"))
+(define D06 (ast->od-Eel-D "t.ext[06]"))
+(define D07 (ast->od-Eel-D "t.ext[07]"))
+(define D10 (ast->od-Eel-D "t.ext[10]"))
+(define D11 (ast->od-Eel-D "t.ext[11]"))
+(define D12 (ast->od-Eel-D "t.ext[12]"))
+(define D13 (ast->od-Eel-D "t.ext[13]"))
+(define D* (list D00 D01 D02 D03 D04 D05 D06 D07 D10 D11 D12 D13))
+
+(define tval9_0 (((e-D* D* (lambda (x) (return-e x)) #f) 0) jp1 zeta1 (car rho,s) (cadr rho,s)))
+(is-ok  89 "D* t.ext[00]"   #\a  (deref "a" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok  90 "D* t.ext[01]"   2    (deref "b" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok  91 "D* t.ext[02]"   3    (deref "c" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok  92 "D* t.ext[03]"   4    (deref "d" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok  93 "D* t.ext[04]"   5.0  (deref "e" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok  94 "D* t.ext[05]"   6.0  (deref "f" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok  95 "D* t.ext[06]"   7    (deref "g" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok  96 "D* t.ext[07]"   8    (deref "h" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok  97 "D* t.ext[10]"   13   (deref "m" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok  98 "D* t.ext[11]"   14   (deref "n" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok  99 "D* t.ext[12]"   15   (deref "o" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok 100 "D* t.ext[13]"   16.0 (deref "p" (tval->rho tval9_0) (tval->s tval9_0)))
+(is-ok 101 "D* tval"        16.0 (tval->val tval9_0))
+
+

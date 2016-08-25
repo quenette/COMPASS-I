@@ -1,0 +1,111 @@
+; Execution-pcd - A pcd, whose operations are execution monad operations
+;  That is operations on the pcd as an monadic operation. 
+; 
+; Developed for guile scheme v 1.8.7
+
+(load "a-jp.scm")
+(load "a-pcd.scm")
+(load "c-execution.scm")
+
+
+; PCD[[pcd]] : (Env -> T(Val)) -> T(Val) -> T(Val)
+;  If the PCD matches the current joinpoint, the function/procuedure joinpoints need the arguments copied for the new behaviour's
+;  use. For this, we create a new environment and add to it. It will be merged with the current environment by the advice at the
+;  right time. Note also that 'return value' is not resolved here (but in advice itself).
+;  If the PCD match fails, then just execute what was supposed to be executed next (i.e. do nothing extra)
+(define e-pcd
+   (lambda (pcd k chi)
+      (lambda (jp rho s)
+         (let ((al (match-pcd pcd jp)))
+            (cond
+               ((pcd-al? al) ((seq-e
+                  ; create a new environment
+;TODO: Actually - we shouldn't copy the env here... we should just build a new one (which later will be added/merged to the real one
+; BUT!!! the problem with doing this is that the "new" env will need to be given the present 'next-l's and hence what we're saying
+; is that there's a chance to be inconsist between the "new" and the "current" if something is added to the current!!!  Better to
+; copy the current!?!
+                  (e-cpenv 0) 
+                  (lambda (rho') (seq-e 
+                     ; populate the advice arguments with values
+                     (rho+al->rho rho' al) 
+                     (lambda (_) (seq-e 
+                        ; apply the body of the advice
+                        (k rho')
+                        (lambda (v) (return-e v))
+               ))))) jp' rho s))
+               ; fail...
+               (else (chi jp rho s))
+)))))
+
+
+; rho+al->rho : Env' -> ArgList -> Env" -> T(Val)
+;  Add the argument list to an environment.
+;  Env" is a new resultant environment. Env' is the initial environment of which the argument list is added to. Neither Env' or 
+;  Env" are the monadic (current) Env. Hence this operation is about building new environments without effecting the current one.
+(define rho+al->rho
+   (lambda (rho' al)
+      (lambda (jp rho s)
+         (cond
+            ((empty-al? al) ((return-e 1) jp rho s))
+            (else ((seq-e 
+               ; create a new location for the argument symbol
+               ; TODO: replace "1" with size, which should come from the typeinfo (but in the ArgList case is undefined because JP
+               ;  doesn't have it
+               (e-decl (al->sym al) 1 (al->ti al)) 
+               (lambda (_) (seq-e
+                  ; Store the argument value bound to the symbol
+                  (e-setref (al->sym al) (al->v al))
+                  (rho+al->rho rho' (al->al al))
+            ))) jp rho s))
+))))
+
+
+
+; Testing...
+; test-apply-env: Exp -> Env -> JP -> Sto -> T(Val)
+(define test-apply-env-e
+   (lambda (e)
+      (lambda (env)
+         (lambda (jp s)
+            ; yep ... dont know how to 'apply' yet, so ...
+            (begin
+               (display "Pretending to apply e with store ")
+               (display s)
+               (display ", but will return 0")
+               ((return-e 0) jp s) 
+)))))
+
+(let ((jp0 (list 'jp)) ; hack for ease of reading results
+      (jp1 ((new-call-jp 'pcall 'myProc (list 1 2 3)) '<invalid>))
+     )
+     (let ((s0 (empty-store))
+          )
+          (let ((env1 (empty-env))
+                (env2 (extend-env 'd 6 (extend-env 'y 8 (extend-env 'x 7 (extend-env 'y 14 (empty-env))))))
+                (pcd1 (list 'and (list 'pcall 'myPro) (list 'args (list 'v1 'v2 'v3))))
+                (pcd2 (list 'and (list 'pcall 'myProc) (list 'args (list 'v1 'v2 'v3))))
+               )
+               (let ((s1 (tval->sto ((e-copy-env env1) jp0 s0)))
+                     (s2 (tval->sto ((e-copy-env env2) jp0 s0)))
+; TODO: need to mimic the apply operation of the shape Exp -> (Env -> T(Val))
+; This mimics the apply operation of the shape Val* -> (T(Val))
+                     (val1 (tval->val ((e-pcd pcd1 (test-apply-env-e 'HACK) (return-e 10)) jp1 s0)))
+                     (val2 (tval->val ((e-pcd pcd2 (test-apply-env-e 'HACK) (return-e 10)) jp1 s0)))
+                     ; pretend the advice counter is also in the  store
+                     (val3 (tval->val ((seq-e (e-named-alloc 'adviceI 0) (lambda (x) (e-pcd pcd1 (test-apply-env-e 'HACK) (return-e 10)))) jp1 s0 )))
+                     (val4 (tval->val ((seq-e (e-named-alloc 'adviceI 0) (lambda (x) (e-pcd pcd2 (test-apply-env-e 'HACK) (return-e 10)))) jp1 s0 )))
+                    )
+                    (begin 
+                       (display "jp0: ") (display jp0) (display "\n")
+                       (display "s0: ") (display s0) (display "\n")
+                       (display "env1: ") (display env1) (display "\n")
+                       (display "s1: ") (display s1) (display "\n") ; (empty-env)
+                       (display "env2: ") (display env2) (display "\n")
+                       (display "s2: ") (display s2) (display "\n") ; (extend-env d 6 (extend-env y 8 (extend-env x 7 (extend-env y 14 (empty-env)))))
+                       (display "val1: ") (display val1) (display "\n") ; 10
+                       (display "val2: ") (display val2) (display "\n") ;
+                       (display "s2: ") (display s2) (display "\n") ; (extend-env d 6 (extend-env y 8 (extend-env x 7 (extend-env y 14 (empty-env)))))
+                       (display "val3: ") (display val3) (display "\n") ; 10
+                       (display "val4: ") (display val4) (display "\n") 
+)))))
+
